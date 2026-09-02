@@ -36,11 +36,13 @@ import org.jetbrains.compose.resources.getString
 abstract class QuestSelectionViewModel : ViewModel() {
     abstract val searchText: StateFlow<String>
     abstract val filteredQuests: StateFlow<List<QuestSelection>>
+    abstract val allQuests: StateFlow<List<QuestSelection>>
     abstract val currentCountry: String?
     abstract val selectedEditTypePresetName: StateFlow<String?>
     abstract val questFilters: StateFlow<QuestFilters>
     /** true if any filter or search is active — drag is disabled while filtering */
     abstract val isFiltered: StateFlow<Boolean>
+    abstract val inlineExpanded: StateFlow<Boolean>
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
@@ -49,6 +51,7 @@ abstract class QuestSelectionViewModel : ViewModel() {
     abstract fun updateSearchText(text: String)
     abstract fun updateFilters(filters: QuestFilters)
     abstract fun clearFilters()
+    abstract fun setInlineExpanded(expanded: Boolean)
 }
 
 @Stable
@@ -67,6 +70,8 @@ class QuestSelectionViewModelImpl(
 
     // persisted filters — restored on init, saved on every change
     override val questFilters = MutableStateFlow(QuestFilters.decode(prefs.questSelectionFilters))
+
+    override val inlineExpanded = MutableStateFlow(prefs.questSelectionInlineExpanded)
 
     private val visibleEditTypeListener = object : VisibleEditTypeSource.Listener {
         override fun onVisibilityChanged(editType: EditType, visible: Boolean) {
@@ -109,6 +114,8 @@ class QuestSelectionViewModelImpl(
     }
 
     private val quests = MutableStateFlow<List<QuestSelection>>(emptyList())
+
+    override val allQuests: StateFlow<List<QuestSelection>> = quests
 
     override val filteredQuests: StateFlow<List<QuestSelection>> =
         combine(quests, searchText, questTitles, questFilters) { quests, searchText, titles, filters ->
@@ -193,6 +200,11 @@ class QuestSelectionViewModelImpl(
     }
 
     override fun clearFilters() = updateFilters(QuestFilters())
+
+    override fun setInlineExpanded(expanded: Boolean) {
+        inlineExpanded.value = expanded
+        prefs.questSelectionInlineExpanded = expanded
+    }
 
     private fun initQuests() {
         launch(Dispatchers.IO) {

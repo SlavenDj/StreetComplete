@@ -624,6 +624,18 @@
     <string name="quest_filter_disabled_by_default">Disabled by default</string>
     <string name="quest_filter_clear">Clear filters</string>
     <string name="quest_filter_reorder_disabled">Reordering disabled while filtered — clear filters to reorder</string>
+    <string name="quest_inline_search_hint">Search %1$d quests…</string>
+    <string name="quest_inline_showing">Showing %1$d of %2$d quests</string>
+    <string name="quest_inline_expand">Expand inline</string>
+    <string name="quest_filter_quick_filters">QUICK FILTERS</string>
+    <string name="quest_inline_panel">INLINE PANEL</string>
+    <string name="quest_filter_topics_scroll">TOPICS (SCROLL ROW)</string>
+    <string name="quest_inline_toggle_all">Toggle All</string>
+    <string name="quest_inline_apply">Apply</string>
+    <string name="quest_inline_enabled">Enabled (%1$d)</string>
+    <string name="quest_inline_disabled">Disabled (%1$d)</string>
+    <string name="quest_inline_all">All</string>
+    <string name="quest_inline_all_count">All (%1$d)</string>
 
     <string name="action_deselect_all">Deselect all</string>
     <string name="pref_quests_deselect_all">Deselect all quests?</string>

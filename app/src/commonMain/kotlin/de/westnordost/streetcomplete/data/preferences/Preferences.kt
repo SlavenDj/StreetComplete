@@ -163,6 +163,7 @@ class Preferences(private val prefs: ObservableSettings) {
     var selectedOverlayName: String? by prefs.nullableString(SELECTED_OVERLAY)
     var questSelectionSearch: String? by prefs.nullableString(QUEST_SELECTION_SEARCH)
     var questSelectionFilters: String? by prefs.nullableString(QUEST_SELECTION_FILTERS)
+    var questSelectionInlineExpanded: Boolean by prefs.boolean(QUEST_SELECTION_INLINE_EXPANDED, false)
 
     fun onSelectedOverlayNameChanged(callback: (String?) -> Unit): SettingsListener =
         prefs.addStringOrNullListener(SELECTED_OVERLAY, callback)
@@ -284,6 +285,7 @@ class Preferences(private val prefs: ObservableSettings) {
         private const val LAST_EDIT_TIME = "changesets.lastChangeTime"
         private const val QUEST_SELECTION_SEARCH = "questSelection.search"
         private const val QUEST_SELECTION_FILTERS = "questSelection.filters"
+        private const val QUEST_SELECTION_INLINE_EXPANDED = "questSelection.inlineExpanded"
 
         // profile & statistics screen UI
         private const val USER_DAYS_ACTIVE = "days_active"

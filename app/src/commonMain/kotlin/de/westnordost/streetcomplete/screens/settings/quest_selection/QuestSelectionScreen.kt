@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.intl.Locale
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.CenteredLargeTitleHint
@@ -26,16 +27,17 @@ fun QuestSelectionScreen(
     onClickBack: () -> Unit,
 ) {
     val currentPresetName by viewModel.selectedEditTypePresetName.collectAsState()
-
     val searchText by viewModel.searchText.collectAsState()
     val filters by viewModel.questFilters.collectAsState()
     val isFiltered by viewModel.isFiltered.collectAsState()
-
+    val inlineExpanded by viewModel.inlineExpanded.collectAsState()
+    val allQuests by viewModel.allQuests.collectAsState()
+    val filteredQuests by viewModel.filteredQuests.collectAsState()
     val displayCountry = remember {
         viewModel.currentCountry?.let { getCountryName(it) } ?: "Atlantis"
     }
 
-    val filteredQuests by viewModel.filteredQuests.collectAsState()
+    val focusRequester = remember { FocusRequester() }
 
     Column(Modifier.fillMaxSize()) {
         QuestSelectionTopAppBar(
@@ -43,10 +45,23 @@ fun QuestSelectionScreen(
             onClickBack = onClickBack,
             onUnselectAll = { viewModel.unselectAll() },
             onReset = { viewModel.resetAll() },
+            filtersCount = filters.countActive(),
+            onClickSearch = { focusRequester.requestFocus() },
+            onClickFilter = { viewModel.setInlineExpanded(!inlineExpanded) },
+        )
+
+        QuestInlineFilterPanel(
             search = searchText,
             onSearchChange = viewModel::updateSearchText,
             filters = filters,
             onFiltersChanged = viewModel::updateFilters,
+            allQuests = allQuests,
+            filteredCount = filteredQuests.size,
+            expanded = inlineExpanded,
+            onToggleExpanded = { viewModel.setInlineExpanded(!inlineExpanded) },
+            onApply = { viewModel.setInlineExpanded(false) },
+            modifier = Modifier,
+            focusRequester = focusRequester,
         )
 
         if (filteredQuests.isEmpty()) {
