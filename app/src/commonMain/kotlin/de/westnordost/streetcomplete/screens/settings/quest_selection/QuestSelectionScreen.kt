@@ -28,6 +28,8 @@ fun QuestSelectionScreen(
     val currentPresetName by viewModel.selectedEditTypePresetName.collectAsState()
 
     val searchText by viewModel.searchText.collectAsState()
+    val filters by viewModel.questFilters.collectAsState()
+    val isFiltered by viewModel.isFiltered.collectAsState()
 
     val displayCountry = remember {
         viewModel.currentCountry?.let { getCountryName(it) } ?: "Atlantis"
@@ -43,6 +45,8 @@ fun QuestSelectionScreen(
             onReset = { viewModel.resetAll() },
             search = searchText,
             onSearchChange = viewModel::updateSearchText,
+            filters = filters,
+            onFiltersChanged = viewModel::updateFilters,
         )
 
         if (filteredQuests.isEmpty()) {
@@ -55,6 +59,7 @@ fun QuestSelectionScreen(
             QuestSelectionList(
                 items = filteredQuests,
                 displayCountry = displayCountry,
+                isFiltered = isFiltered,
                 onSelect = { questType, selected ->
                     viewModel.select(questType, selected)
                 },

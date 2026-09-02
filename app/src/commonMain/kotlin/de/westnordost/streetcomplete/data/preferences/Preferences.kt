@@ -161,6 +161,8 @@ class Preferences(private val prefs: ObservableSettings) {
     // quest & overlay UI
     var selectedEditTypePreset: Long by prefs.long(SELECTED_EDIT_TYPE_PRESET, 0L)
     var selectedOverlayName: String? by prefs.nullableString(SELECTED_OVERLAY)
+    var questSelectionSearch: String? by prefs.nullableString(QUEST_SELECTION_SEARCH)
+    var questSelectionFilters: String? by prefs.nullableString(QUEST_SELECTION_FILTERS)
 
     fun onSelectedOverlayNameChanged(callback: (String?) -> Unit): SettingsListener =
         prefs.addStringOrNullListener(SELECTED_OVERLAY, callback)
@@ -280,6 +282,8 @@ class Preferences(private val prefs: ObservableSettings) {
         private const val SELECTED_OVERLAY = "selectedOverlay"
         private const val LAST_PICKED_PREFIX = "imageListLastPicked."
         private const val LAST_EDIT_TIME = "changesets.lastChangeTime"
+        private const val QUEST_SELECTION_SEARCH = "questSelection.search"
+        private const val QUEST_SELECTION_FILTERS = "questSelection.filters"
 
         // profile & statistics screen UI
         private const val USER_DAYS_ACTIVE = "days_active"

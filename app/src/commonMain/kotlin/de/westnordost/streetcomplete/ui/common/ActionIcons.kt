@@ -27,6 +27,11 @@ fun SearchIcon() {
 }
 
 @Composable
+fun FilterIcon() {
+    Icon(painterResource(Res.drawable.ic_filter_list_24), stringResource(Res.string.action_filter))
+}
+
+@Composable
 fun CopyIcon() {
     Icon(painterResource(Res.drawable.ic_content_copy_24), stringResource(Res.string.action_copy))
 }

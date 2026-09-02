@@ -25,6 +25,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
 import de.westnordost.streetcomplete.ui.common.ExpandableSearchField
+import de.westnordost.streetcomplete.ui.common.FilterIcon
 import de.westnordost.streetcomplete.ui.common.MoreIcon
 import de.westnordost.streetcomplete.ui.common.SearchIcon
 import de.westnordost.streetcomplete.ui.common.TopAppBarWithContent
@@ -40,9 +41,12 @@ fun QuestSelectionTopAppBar(
     onReset: () -> Unit,
     search: String,
     onSearchChange: (String) -> Unit,
+    filters: QuestFilters = QuestFilters(),
+    onFiltersChanged: (QuestFilters) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showSearch by rememberSaveable { mutableStateOf(false) }
+    var showFilterDialog by remember { mutableStateOf(false) }
 
     fun setShowSearch(value: Boolean) {
         showSearch = value
@@ -57,7 +61,9 @@ fun QuestSelectionTopAppBar(
             QuestSelectionTopBarActions(
                 onUnselectAll = onUnselectAll,
                 onReset = onReset,
-                onClickSearch = { setShowSearch(!showSearch) }
+                onClickSearch = { setShowSearch(!showSearch) },
+                onClickFilter = { showFilterDialog = true },
+                filtersCount = filters.countActive()
             )
         },
     ) {
@@ -74,6 +80,14 @@ fun QuestSelectionTopAppBar(
                 backgroundColor = MaterialTheme.colors.surface
             ),
             keyboardOptions = KeyboardOptions(hintLocales = LocaleList.current),
+        )
+    }
+
+    if (showFilterDialog) {
+        QuestFilterDialog(
+            filters = filters,
+            onDismissRequest = { showFilterDialog = false },
+            onFiltersChanged = onFiltersChanged
         )
     }
 }
@@ -100,12 +114,28 @@ private fun QuestSelectionTopBarActions(
     onUnselectAll: () -> Unit,
     onReset: () -> Unit,
     onClickSearch: () -> Unit,
+    onClickFilter: () -> Unit = {},
+    filtersCount: Int = 0,
 ) {
     var showResetDialog by remember { mutableStateOf(false) }
     var showDeselectAllDialog by remember { mutableStateOf(false) }
     var showActionsDropdown by remember { mutableStateOf(false) }
 
     IconButton(onClick = onClickSearch) { SearchIcon() }
+    androidx.compose.foundation.layout.Box {
+        IconButton(onClick = onClickFilter) { FilterIcon() }
+        if (filtersCount > 0) {
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .padding(top = 2.dp, end = 2.dp)
+                    .align(androidx.compose.ui.Alignment.TopEnd)
+            ) {
+                androidx.compose.material.Badge(
+                    backgroundColor = MaterialTheme.colors.secondary
+                ) { Text(filtersCount.toString()) }
+            }
+        }
+    }
     Box {
         IconButton(onClick = { showActionsDropdown = true }) { MoreIcon() }
         DropdownMenu(

@@ -38,12 +38,17 @@ abstract class QuestSelectionViewModel : ViewModel() {
     abstract val filteredQuests: StateFlow<List<QuestSelection>>
     abstract val currentCountry: String?
     abstract val selectedEditTypePresetName: StateFlow<String?>
+    abstract val questFilters: StateFlow<QuestFilters>
+    /** true if any filter or search is active — drag is disabled while filtering */
+    abstract val isFiltered: StateFlow<Boolean>
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
     abstract fun unselectAll()
     abstract fun resetAll()
     abstract fun updateSearchText(text: String)
+    abstract fun updateFilters(filters: QuestFilters)
+    abstract fun clearFilters()
 }
 
 @Stable
@@ -53,12 +58,15 @@ class QuestSelectionViewModelImpl(
     private val visibleEditTypeController: VisibleEditTypeController,
     private val questTypeOrderController: QuestTypeOrderController,
     countryBoundaries: Lazy<CountryBoundaries>,
-    prefs: Preferences,
+    private val prefs: Preferences,
 ) : QuestSelectionViewModel() {
 
-    override val searchText = MutableStateFlow("")
+    override val searchText = MutableStateFlow(prefs.questSelectionSearch ?: "")
 
     private val questTitles = MutableStateFlow<Map<String, String>>(emptyMap())
+
+    // persisted filters — restored on init, saved on every change
+    override val questFilters = MutableStateFlow(QuestFilters.decode(prefs.questSelectionFilters))
 
     private val visibleEditTypeListener = object : VisibleEditTypeSource.Listener {
         override fun onVisibilityChanged(editType: EditType, visible: Boolean) {
@@ -103,9 +111,14 @@ class QuestSelectionViewModelImpl(
     private val quests = MutableStateFlow<List<QuestSelection>>(emptyList())
 
     override val filteredQuests: StateFlow<List<QuestSelection>> =
-        combine(quests, searchText, questTitles) { quests, searchText, titles ->
-            filterQuests(quests, searchText, titles)
+        combine(quests, searchText, questTitles, questFilters) { quests, searchText, titles, filters ->
+            filterQuests(quests, searchText, titles, filters)
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    override val isFiltered: StateFlow<Boolean> =
+        combine(searchText, questFilters) { text, filters ->
+            text.isNotBlank() || !filters.isDefault
+        }.stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     private val currentCountryCodes = countryBoundaries.value.getIds(prefs.mapPosition)
 
@@ -171,7 +184,15 @@ class QuestSelectionViewModelImpl(
 
     override fun updateSearchText(text: String) {
         searchText.value = text
+        prefs.questSelectionSearch = text.takeIf { it.isNotBlank() }
     }
+
+    override fun updateFilters(filters: QuestFilters) {
+        questFilters.value = filters
+        prefs.questSelectionFilters = filters.encode()
+    }
+
+    override fun clearFilters() = updateFilters(QuestFilters())
 
     private fun initQuests() {
         launch(Dispatchers.IO) {
@@ -200,14 +221,44 @@ class QuestSelectionViewModelImpl(
         quests: List<QuestSelection>,
         filter: String,
         titles: Map<String, String>,
+        filters: QuestFilters,
     ): List<QuestSelection> {
         val words = filter.takeIf { it.isNotBlank() }?.trim()?.lowercase()?.split(' ') ?: emptyList()
-        return if (words.isEmpty()) {
-            quests
-        } else {
-            quests.filter { quest ->
-                titles[quest.questType.name]?.lowercase()?.containsAll(words) == true
+        return quests.filter { qs ->
+            // text search: title + class name + wiki link
+            val textOk = if (words.isEmpty()) true else {
+                val title = titles[qs.questType.name]?.lowercase() ?: ""
+                val name = qs.questType.name.lowercase()
+                val wiki = qs.questType.wikiLink?.lowercase() ?: ""
+                // match if ALL words appear in at least one of title/name/wiki (or combined)
+                // to keep it flexible, check combined title+name+wiki contains all words
+                val combined = "$title $name $wiki"
+                combined.containsAll(words) ||
+                    title.containsAll(words) || name.containsAll(words) || wiki.containsAll(words)
             }
+            if (!textOk) return@filter false
+
+            // selected / not selected
+            if (filters.selected != null && qs.selected != filters.selected) return@filter false
+
+            // achievements
+            if (filters.achievements.isNotEmpty()) {
+                if (qs.questType.achievements.none { it in filters.achievements }) return@filter false
+            }
+
+            // disabled in current country
+            if (filters.disabledInCurrentCountry != null) {
+                val disabledInCountry = !qs.enabledInCurrentCountry
+                if (disabledInCountry != filters.disabledInCurrentCountry) return@filter false
+            }
+
+            // disabled by default
+            if (filters.disabledByDefault != null) {
+                val disabledByDefault = qs.questType.defaultDisabledMessage != null
+                if (disabledByDefault != filters.disabledByDefault) return@filter false
+            }
+
+            true
         }
     }
 }

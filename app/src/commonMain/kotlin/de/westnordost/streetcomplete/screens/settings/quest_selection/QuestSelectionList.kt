@@ -46,6 +46,7 @@ fun QuestSelectionList(
     onReorder: (questType: QuestType, toAfter: QuestType) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues.Zero,
+    isFiltered: Boolean = false,
 ) {
     var showEnableQuestDialog by remember { mutableStateOf<QuestType?>(null) }
 
@@ -72,6 +73,17 @@ fun QuestSelectionList(
 
     Column(modifier) {
         val layoutDirection = LocalLayoutDirection.current
+        if (isFiltered) {
+            Text(
+                text = stringResource(Res.string.quest_filter_reorder_disabled),
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+            Divider()
+        }
         QuestSelectionHeader(Modifier.padding(
             start = contentPadding.calculateStartPadding(layoutDirection),
             top = contentPadding.calculateTopPadding(),
@@ -96,7 +108,7 @@ fun QuestSelectionList(
                 ReorderableItem(
                     state = dragDropState,
                     key = item.questType.name,
-                    enabled = item.isInteractionEnabled
+                    enabled = item.isInteractionEnabled && !isFiltered
                 ) { isDragging ->
                     val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
                     val haptic = LocalHapticFeedback.current
@@ -105,7 +117,7 @@ fun QuestSelectionList(
                         elevation = elevation,
                         modifier = Modifier
                             .longPressDraggableHandle(
-                                enabled = item.isInteractionEnabled,
+                                enabled = item.isInteractionEnabled && !isFiltered,
                                 onDragStarted = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) },
                                 onDragStopped = ::onDragStopped,
                             )
