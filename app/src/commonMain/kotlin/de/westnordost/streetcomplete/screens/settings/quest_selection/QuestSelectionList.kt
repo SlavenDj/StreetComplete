@@ -82,22 +82,18 @@ fun QuestSelectionList(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
             )
-            Divider()
         }
-        QuestSelectionHeader(Modifier.padding(
-            start = contentPadding.calculateStartPadding(layoutDirection),
-            top = contentPadding.calculateTopPadding(),
-            end = contentPadding.calculateEndPadding(layoutDirection)
-        ))
         // TODO Compose: scrollbars would be nice here (not supported yet by compose)
         //      When they are available: Check other places too, don't want to add a todo in every
         //      single place that could have a scrollbar
         LazyColumn(
             state = listState,
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(
-                start = contentPadding.calculateStartPadding(layoutDirection),
-                end = contentPadding.calculateEndPadding(layoutDirection),
-                bottom = contentPadding.calculateBottomPadding()
+                start = contentPadding.calculateStartPadding(layoutDirection) + 8.dp,
+                top = 8.dp,
+                end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp,
+                bottom = contentPadding.calculateBottomPadding() + 8.dp
             ),
         ) {
             itemsIndexed(
@@ -115,6 +111,8 @@ fun QuestSelectionList(
 
                     Surface(
                         elevation = elevation,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                        color = androidx.compose.ui.graphics.Color.Transparent,
                         modifier = Modifier
                             .longPressDraggableHandle(
                                 enabled = item.isInteractionEnabled && !isFiltered,
@@ -122,22 +120,18 @@ fun QuestSelectionList(
                                 onDragStopped = ::onDragStopped,
                             )
                     ) {
-                        Column {
-                            if (index > 0) Divider()
-                            QuestSelectionRow(
-                                item = item,
-                                onToggleSelection = { isSelected ->
-                                    // when enabling quest that is disabled by default, require confirmation
-                                    if (isSelected && item.questType.defaultDisabledMessage != null) {
-                                        showEnableQuestDialog = item.questType
-                                    } else {
-                                        onSelect(item.questType, isSelected)
-                                    }
-                                },
-                                displayCountry = displayCountry,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
+                        QuestSelectionRow(
+                            item = item,
+                            onToggleSelection = { isSelected ->
+                                // when enabling quest that is disabled by default, require confirmation
+                                if (isSelected && item.questType.defaultDisabledMessage != null) {
+                                    showEnableQuestDialog = item.questType
+                                } else {
+                                    onSelect(item.questType, isSelected)
+                                }
+                            },
+                            displayCountry = displayCountry,
+                        )
                     }
                 }
             }
