@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -170,8 +171,10 @@ fun QuestInlineFilterPanel(
                             },
                             leadingIcon = {
                                 Icon(
-                                    painterResource(if (selected) Res.drawable.ic_check_circle_24 else Res.drawable.ic_circle_outline_24),
-                                    null
+                                    painterResource(ach.iconRes),
+                                    null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = androidx.compose.ui.graphics.Color.Unspecified
                                 )
                             },
                             colors = ChipDefaults.filterChipColors(
@@ -255,7 +258,7 @@ private fun ActiveFiltersRow(
                 ) { Text(label) }
             }
         }
-        // Achievements
+        // Achievements — show with achievement icon as in design (Bicyclist bicycle, Rare star)
         for (ach in filters.achievements) {
             item(ach.id) {
                 val label = stringResource(ach.titleRes)
@@ -264,7 +267,8 @@ private fun ActiveFiltersRow(
                     onClick = {
                         onFiltersChanged(filters.copy(achievements = filters.achievements - ach))
                     },
-                    leadingIcon = { Icon(painterResource(Res.drawable.ic_check_circle_24), null) },
+                    leadingIcon = { Icon(painterResource(ach.iconRes), null, modifier = Modifier.size(18.dp), tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                    colors = ChipDefaults.filterChipColors(selectedBackgroundColor = MaterialTheme.colors.primary, selectedContentColor = MaterialTheme.colors.onPrimary)
                 ) { Text(label) }
             }
         }
@@ -357,4 +361,19 @@ private val EditTypeAchievement.titleRes get() = when (this) {
     EditTypeAchievement.CITIZEN -> Res.string.achievement_citizen_title
     EditTypeAchievement.OUTDOORS -> Res.string.achievement_outdoors_title
     EditTypeAchievement.LIFESAVER -> Res.string.achievement_lifesaver_title
+}
+
+private val EditTypeAchievement.iconRes get() = when (this) {
+    EditTypeAchievement.RARE -> Res.drawable.ic_star_24
+    EditTypeAchievement.CAR -> Res.drawable.quest_car
+    EditTypeAchievement.VEG -> Res.drawable.quest_restaurant_vegetarian
+    EditTypeAchievement.PEDESTRIAN -> Res.drawable.quest_pedestrian
+    EditTypeAchievement.BUILDING -> Res.drawable.quest_building
+    EditTypeAchievement.POSTMAN -> Res.drawable.achievement_postman
+    EditTypeAchievement.BLIND -> Res.drawable.quest_blind
+    EditTypeAchievement.WHEELCHAIR -> Res.drawable.achievement_wheelchair
+    EditTypeAchievement.BICYCLIST -> Res.drawable.quest_bicycle
+    EditTypeAchievement.CITIZEN -> Res.drawable.achievement_citizen
+    EditTypeAchievement.OUTDOORS -> Res.drawable.achievement_outdoors
+    EditTypeAchievement.LIFESAVER -> Res.drawable.achievement_lifesaver
 }
