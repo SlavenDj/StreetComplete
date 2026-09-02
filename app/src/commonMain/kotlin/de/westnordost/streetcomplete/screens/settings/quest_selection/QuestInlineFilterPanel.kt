@@ -140,13 +140,13 @@ fun QuestInlineFilterPanel(
                     allQuests = allQuests
                 )
 
-                // Topics scroll row
+                // Topics — flex wrap instead of single scroll row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(Res.string.quest_filter_topics_scroll),
+                        text = stringResource(Res.string.quest_filter_achievements),
                         style = MaterialTheme.typography.caption,
                         modifier = Modifier.weight(1f)
                     )
@@ -157,11 +157,12 @@ fun QuestInlineFilterPanel(
                         Text(stringResource(Res.string.quest_inline_toggle_all))
                     }
                 }
-                LazyRow(
+                FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(end = 8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(EditTypeAchievement.entries.toList()) { ach ->
+                    for (ach in EditTypeAchievement.entries) {
                         val selected = ach in filters.achievements
                         FilterChip(
                             selected = selected,
