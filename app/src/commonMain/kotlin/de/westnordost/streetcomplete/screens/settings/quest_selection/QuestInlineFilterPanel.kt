@@ -1,5 +1,9 @@
 package de.westnordost.streetcomplete.screens.settings.quest_selection
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -54,7 +59,11 @@ fun QuestInlineFilterPanel(
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester? = null,
 ) {
-    Column(modifier = modifier.background(MaterialTheme.colors.surface)) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colors.surface)
+            .animateContentSize()
+    ) {
         // Persistent search bar
         OutlinedTextField(
             value = search,
@@ -72,12 +81,18 @@ fun QuestInlineFilterPanel(
                 .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
         )
 
-        // Active filter chips row (always visible when any filter active)
-        if (!filters.isDefault || search.isNotBlank()) {
+        // Active filter chips row — animate appearance to avoid abrupt shift
+        AnimatedVisibility(
+            visible = !filters.isDefault || search.isNotBlank(),
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
             ActiveFiltersRow(
                 filters = filters,
                 onFiltersChanged = onFiltersChanged,
-                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
 
@@ -160,7 +175,7 @@ fun QuestInlineFilterPanel(
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
                 ) {
                     for (ach in EditTypeAchievement.entries) {
                         val selected = ach in filters.achievements
